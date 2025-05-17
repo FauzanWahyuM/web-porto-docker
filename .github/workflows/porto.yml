@@ -1,59 +1,58 @@
-name: Build, Test, and Deploy
+name: Deploy to Azure VM
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      # --- TESTING SECTION ---
-      - name: Run HTML validation
-        run: |
-          npm install -g html-validator-cli
-          html-validator --file index.html --verbose
-
-      - name: Check broken links
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: >-
-            ./dist/*.html
-            --exclude-file .lycheeignore
-            --format markdown
-            --output link-check-results.md
-            --timeout 20
-            --max-retries 2
-
-      - name: Upload link check results
-        uses: actions/upload-artifact@v4  # Changed from v3 to v4
-        if: always()
-        with:
-          name: link-check-results
-          path: link-check-results.md
-
-      # --- BUILD & DEPLOY ---
-      - name: Build project
+      - name: Build static files
         run: |
           mkdir -p dist
           cp -r *.html assets/ dist/
 
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Build Docker image
+        run: |
+          docker build -t portfolio-web .
+          docker tag portfolio-web ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
-          github_token: ${{ secrets.PAT_TOKEN }}
-          publish_dir: ./dist
-          full_commit_message: "Deploy to GitHub Pages (via GitHub Actions)"
-          force_orphan: true
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Push to GHCR
+        run: docker push ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          script: |
+            echo "Deploying to /home/PortoFWM..."
+            cd /home/PortoFWM
+            
+            # Pull image terbaru
+            docker pull ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+            
+            # Hentikan dan hapus container lama jika ada
+            docker stop portfolio || true
+            docker rm portfolio || true
+            
+            # Jalankan container baru dengan volume binding
+            docker run -d \
+              --name portfolio \
+              -p 80:80 \
+              -v /home/PortoFWM/data:/usr/share/nginx/html \
+              ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+            
+            echo "Deploy berhasil! Website running di http://$(curl -s ifconfig.me)"
