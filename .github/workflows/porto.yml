@@ -1,0 +1,59 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # --- TESTING SECTION ---
+      - name: Run HTML validation
+        run: |
+          npm install -g html-validator-cli
+          html-validator --file index.html --verbose
+
+      - name: Check broken links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: >-
+            ./dist/*.html
+            --exclude-file .lycheeignore
+            --format markdown
+            --output link-check-results.md
+            --timeout 20
+            --max-retries 2
+
+      - name: Upload link check results
+        uses: actions/upload-artifact@v4  # Changed from v3 to v4
+        if: always()
+        with:
+          name: link-check-results
+          path: link-check-results.md
+
+      # --- BUILD & DEPLOY ---
+      - name: Build project
+        run: |
+          mkdir -p dist
+          cp -r *.html assets/ dist/
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.PAT_TOKEN }}
+          publish_dir: ./dist
+          full_commit_message: "Deploy to GitHub Pages (via GitHub Actions)"
+          force_orphan: true

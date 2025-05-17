@@ -1,0 +1,6 @@
+{
+    "name": "portfolio",
+    "scripts": {
+        "build": "mkdir -p dist && cp -r *.html assets/ dist/"
+    }
+}
