@@ -7,23 +7,41 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to GHCR
+      # Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # atau sesuaikan versi Node.js kamu
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Build static site (hasil build masuk ke folder dist/)
+      - name: Build static files
+        run: npm run build
+
+      # Login ke GHCR
+      - name: Login to GitHub Container Registry (GHCR)
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Build and Push
+      # Build & push Docker image
+      - name: Build and Push Docker image
         run: |
           docker build -t ghcr.io/fauzanwahyum/web-porto-docker:latest .
           docker push ghcr.io/fauzanwahyum/web-porto-docker:latest
 
-      - name: Deploy to VM
+      # Deploy ke Azure VM
+      - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.AZURE_VM_IP }}
@@ -35,7 +53,7 @@ jobs:
             docker pull ghcr.io/fauzanwahyum/web-porto-docker:latest
             docker run -d \
               --name web-porto-docker \
-              -p 80:80 \
+              -p 8080:80 \
               ghcr.io/fauzanwahyum/web-porto-docker:latest
-            
-            echo "Deploy berhasil! Website running di http://$(curl -s ifconfig.me)"
+
+            echo "✅ Deploy berhasil! Akses di: http://${{ secrets.AZURE_VM_IP }}:8080"
