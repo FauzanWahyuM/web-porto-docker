@@ -45,7 +45,8 @@ jobs:
             cd /home/PortoFWM
             
             # Pull image terbaru
-            docker pull ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+            LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker pull ghcr.io/$LOWER_USERNAME/portfolio-web:latest
             
             # Hentikan dan hapus container lama jika ada
             docker stop portfolio || true
@@ -56,6 +57,7 @@ jobs:
               --name portfolio \
               -p 80:80 \
               -v /home/PortoFWM/data:/usr/share/nginx/html \
-              ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+              LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+              ghcr.io/$LOWER_USERNAME/portfolio-web:latest
             
             echo "Deploy berhasil! Website running di http://$(curl -s ifconfig.me)"
