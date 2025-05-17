@@ -36,6 +36,7 @@ jobs:
           username: ${{ secrets.AZURE_VM_USERNAME }}
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           script: |
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_TOKEN }}
             docker stop web-porto-docker || true
             docker rm web-porto-docker || true
             docker pull ghcr.io/fauzanwahyum/web-porto-docker:latest
