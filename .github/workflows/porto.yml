@@ -12,20 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup Node.js environment
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20' # atau sesuaikan versi Node.js kamu
-
-      # Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Build static site (hasil build masuk ke folder dist/)
-      - name: Build static files
-        run: npm run build
-
       # Login ke GHCR
       - name: Login to GitHub Container Registry (GHCR)
         uses: docker/login-action@v2
@@ -37,6 +23,8 @@ jobs:
       # Build & push Docker image
       - name: Build and Push Docker image
         run: |
+          npm install
+          npm run build
           docker build -t ghcr.io/fauzanwahyum/web-porto-docker:latest .
           docker push ghcr.io/fauzanwahyum/web-porto-docker:latest
 
