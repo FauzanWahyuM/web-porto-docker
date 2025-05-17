@@ -18,6 +18,7 @@ jobs:
 
       - name: Build Docker image
         run: |
+          LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker build -t portfolio-web .
           docker tag portfolio-web ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
 
@@ -29,7 +30,9 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Push to GHCR
-        run: docker push ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
+        run: |
+          LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${{ github.repository_owner }}/portfolio-web:latest
 
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1
