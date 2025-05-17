@@ -5,59 +5,37 @@ on:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build static files
-        run: |
-          mkdir -p dist
-          cp -r *.html assets/ dist/
-
-      - name: Build Docker image
-        run: |
-          LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t portfolio-web .
-          docker tag portfolio-web ghcr.io/$LOWER_USERNAME/web-porto-docker:latest
-
-      - name: Login to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Push to GHCR
+      - name: Build and Push
         run: |
-          LOWER_USERNAME=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/$LOWER_USERNAME/web-porto-docker:latest
+          docker build -t ghcr.io/fauzanwahyum/web-porto-docker:latest .
+          docker push ghcr.io/fauzanwahyum/web-porto-docker:latest
 
-      - name: Deploy to Azure VM
+      - name: Deploy to VM
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.AZURE_VM_IP }}
           username: ${{ secrets.AZURE_VM_USERNAME }}
           password: ${{ secrets.AZURE_VM_PASSWORD }}
           script: |
-            echo "Deploying to /home/PortoFWM..."
-            cd /home/PortoFWM
-
-            # Convert username ke lowercase
-            LOWER_USERNAME="fauzanwahyum"  # Ganti dengan username lowercase Anda
-            IMAGE_NAME="web-porto-docker"  # Nama repo lowercase
-
-            # Stop dan hapus container lama
-            docker stop $IMAGE_NAME || true
-            docker rm $IMAGE_NAME || true
-
-            # Pull dan run image baru
-            docker pull ghcr.io/$LOWER_USERNAME/$IMAGE_NAME:latest
+            docker stop web-porto-docker || true
+            docker rm web-porto-docker || true
+            docker pull ghcr.io/fauzanwahyum/web-porto-docker:latest
             docker run -d \
-              --name $IMAGE_NAME \
+              --name web-porto-docker \
               -p 80:80 \
-              -v /home/PortoFWM/data:/usr/share/nginx/html \
-              ghcr.io/$LOWER_USERNAME/$IMAGE_NAME:latest
+              ghcr.io/fauzanwahyum/web-porto-docker:latest
             
             echo "Deploy berhasil! Website running di http://$(curl -s ifconfig.me)"
