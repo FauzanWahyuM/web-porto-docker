@@ -19,11 +19,10 @@ jobs:
           htmlhint "**/*.html"
 
       # CSS (Tailwind) Linting
-      - name: Validate CSS (Tailwind)
+      - name: Lint Tailwind CSS with Stylelint
         run: |
-          npm install -g tailwindcss stylelint stylelint-config-standard stylelint-config-tailwindcss
-          npx tailwindcss -o output.css --minify
-          npx stylelint "assets/css/**/*.css"
+          npm install stylelint stylelint-config-standard stylelint-config-tailwindcss --save-dev
+          npx stylelint "**/*.css"
 
       # JavaScript Linting
       - name: Validate JavaScript
