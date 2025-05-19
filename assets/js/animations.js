@@ -1,5 +1,3 @@
-/* global console */
-
 // 🎯 Inisialisasi animasi scroll
 function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
@@ -54,8 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
     initProjectCardFlip();
 
-    // eslint-disable-next-line no-console
+
     console.log('Flip card diaktifkan dengan hover');
-    // eslint-disable-next-line no-console
     console.log(`${document.querySelectorAll('.project-card').length} project card ditemukan`);
 });
