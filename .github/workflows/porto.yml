@@ -5,37 +5,40 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  validate:
+    name: Validate Code
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Install htmlhint untuk validasi HTML
-      - name: Install htmlhint
-        run: npm install -g htmlhint
-
-      # Validasi HTML menggunakan htmlhint
+      # HTML Linting
       - name: Validate HTML files
         run: |
-          # Contoh cek semua html di folder components, sesuaikan pathnya jika perlu
+          npm install -g htmlhint
           htmlhint "**/*.html"
-      
-      # Validasi CSS (Tailwind + stylelint)
+
+      # CSS (Tailwind) Linting
       - name: Validate CSS (Tailwind)
         run: |
           npm install -g tailwindcss stylelint stylelint-config-standard stylelint-config-tailwindcss
           npx tailwindcss -o output.css --minify
           npx stylelint "assets/css/**/*.css"
 
-      # Validasi JavaScript
+      # JavaScript Linting
       - name: Validate JavaScript
         run: |
           npm install -g eslint
-          npx eslint "assets/js/**/*.js"    
-      
-      # Login ke GHCR
+          npx eslint "assets/js/**/*.js"
+
+  deploy:
+    name: Deploy to Azure VM
+    runs-on: ubuntu-latest
+    needs: validate 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to GitHub Container Registry (GHCR)
         uses: docker/login-action@v2
         with:
@@ -43,7 +46,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # Build & push Docker image
       - name: Build and Push Docker image
         run: |
           npm install
@@ -51,7 +53,6 @@ jobs:
           docker build -t ghcr.io/fauzanwahyum/web-porto-docker:latest .
           docker push ghcr.io/fauzanwahyum/web-porto-docker:latest
 
-      # Deploy ke Azure VM
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1
         with:
@@ -68,5 +69,4 @@ jobs:
               --name web-porto-docker \
               -p 8080:80 \
               ghcr.io/fauzanwahyum/web-porto-docker:latest
-
             echo "✅ Deploy berhasil! Akses di: http://${{ secrets.AZURE_VM_IP }}:8080"
