@@ -1,4 +1,5 @@
-// Initialize Vanta.js background
+/* global VANTA */
+
 document.addEventListener('DOMContentLoaded', () => {
     VANTA.NET({
         el: "#vanta-bg",

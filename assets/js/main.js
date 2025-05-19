@@ -1,3 +1,4 @@
+/* global initScrollAnimations initProjectCardFlip initSmoothScroll */
 document.addEventListener('DOMContentLoaded', function () {
     const components = document.querySelectorAll('[data-include]');
     let loadedCount = 0;

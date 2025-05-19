@@ -1,3 +1,5 @@
+/* global console */
+
 // 🎯 Inisialisasi animasi scroll
 function initScrollAnimations() {
     const observer = new IntersectionObserver((entries) => {
@@ -29,17 +31,7 @@ function initSmoothScroll() {
     });
 }
 
-// 🚀 Inisialisasi semua fungsi saat DOM ready
-document.addEventListener('DOMContentLoaded', function() {
-    initScrollAnimations();
-    initSmoothScroll();
-    initProjectCardFlip();``
-    
-    // Debugging
-    console.log('Flip card diaktifkan dengan hover');
-    console.log(`${document.querySelectorAll('.project-card').length} project card ditemukan`);
-});
-
+// 🚀 Inisialisasi flip card pada project cards
 function initProjectCardFlip() {
     const projectCards = document.querySelectorAll('.project-card');
 
@@ -55,3 +47,15 @@ function initProjectCardFlip() {
         });
     });
 }
+
+// Jalankan semua inisialisasi saat DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+    initScrollAnimations();
+    initSmoothScroll();
+    initProjectCardFlip();
+
+    // eslint-disable-next-line no-console
+    console.log('Flip card diaktifkan dengan hover');
+    // eslint-disable-next-line no-console
+    console.log(`${document.querySelectorAll('.project-card').length} project card ditemukan`);
+});
