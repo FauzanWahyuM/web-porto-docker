@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const components = document.querySelectorAll('[data-include]');
     let loadedCount = 0;
 
@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof initSmoothScroll === 'function') {
                 initSmoothScroll();
             }
+
+            // --- Tambahan: Jalankan toggle theme setelah komponen dimuat ---
+            setupThemeToggle();
         }, 100); // Tunggu 100ms setelah load terakhir
     }
 
@@ -35,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 component.innerHTML = data;
                 loadedCount++;
-                
+
                 if (loadedCount === components.length) {
                     initializeAfterLoad();
                 }
@@ -43,11 +46,40 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error loading component:', error);
                 loadedCount++;
-                
-                // Tetap jalankan inisialisasi jika ada error
+
                 if (loadedCount === components.length) {
                     initializeAfterLoad();
                 }
             });
     });
+
+    // Fungsi toggle tema
+    function setupThemeToggle() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+
+        if (!toggleBtn) return;
+
+        // Cek preferensi tersimpan
+        if (localStorage.getItem('theme') === 'dark') {
+            root.classList.add('dark');
+            toggleBtn.textContent = '☀️';
+        } else {
+            root.classList.remove('dark');
+            toggleBtn.textContent = '🌙';
+        }
+
+        // Toggle saat diklik
+        toggleBtn.addEventListener('click', () => {
+            if (root.classList.contains('dark')) {
+                root.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                toggleBtn.textContent = '🌙';
+            } else {
+                root.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                toggleBtn.textContent = '☀️';
+            }
+        });
+    }
 });
