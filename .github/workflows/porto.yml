@@ -22,7 +22,7 @@ jobs:
       - name: Lint Tailwind CSS with Stylelint
         run: |
           npm install stylelint stylelint-config-standard stylelint-config-tailwindcss --save-dev
-          npx stylelint "**/*.css"
+          npx stylelint "**/*.css" --fix
 
       # JavaScript Linting
       - name: Validate JavaScript
