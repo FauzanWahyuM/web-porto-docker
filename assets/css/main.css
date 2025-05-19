@@ -106,3 +106,16 @@ body {
 .glow {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
 }
+
+.contact-card:hover .contact-icon {
+    transform: rotate(10deg) scale(1.1);
+}
+
+.contact-link {
+    transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
