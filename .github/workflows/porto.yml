@@ -27,7 +27,7 @@ jobs:
       # JavaScript Linting
       - name: Validate JavaScript
         run: |
-          npm install -g eslint
+          npm install --save-dev @eslint/js globals
           npx eslint "assets/js/**/*.js"
 
   deploy:

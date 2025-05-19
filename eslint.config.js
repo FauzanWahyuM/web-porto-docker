@@ -4,7 +4,6 @@ import globals from 'globals';
 
 export default [
     {
-        name: 'base-config',
         files: ['**/*.js'],
         languageOptions: {
             ecmaVersion: 'latest',
@@ -15,10 +14,7 @@ export default [
             },
         },
         rules: {
-            // Aturan dasar JavaScript
             ...js.configs.recommended.rules,
-
-            // Contoh tambahan aturan
             'no-console': 'warn',
             'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
         },
